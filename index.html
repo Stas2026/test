@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Блакитний фон з зображенням</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #87CEEB; /* Блакитний колір */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #click-counter, #online-counter {
+            font-size: 1.5em;
+            color: #333;
+        }
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+        }
+        .image-container img {
+            width: 50%; /* Зменшене зображення */
+            height: auto;
+            cursor: pointer; /* Вказівник на зображення при наведенні */
+        }
+    </style>
+</head>
+<body>
+    <div id="online-counter">Онлайн: 0</div>
+    <div id="click-counter">Кліків: 0</div>
+    
+    <div class="image-container">
+        <img src="images/starr.png" alt="Starr" onclick="incrementClicks()">
+    </div>
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYcZeuP54JIKhU3P9m_9ONMz20YopdE5k",
+            authDomain: "pin-master-d51a4.firebaseapp.com",
+            projectId: "pin-master-d51a4",
+            storageBucket: "pin-master-d51a4.appspot.com",
+            messagingSenderId: "90573156961",
+            appId: "1:90573156961:web:1618987b8c6819c20b7020",
+            measurementId: "G-TE7R3K8NFQ",
+            databaseURL: "https://pin-master-d51a4-default-rtdb.firebaseio.com" // Додано URL для Realtime Database
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+
+        // Reference to the online users counter in the database
+        const onlineRef = ref(database, 'online');
+
+        // Track when a user connects or disconnects
+        const myConnectionRef = ref(database, '.info/connected');
+        onValue(myConnectionRef, (snapshot) => {
+            if (snapshot.val() === true) {
+                // User is connected
+                const userRef = ref(database, `online/${Date.now()}`);
+                set(userRef, true);
+                userRef.onDisconnect().remove(); // Remove this user when they disconnect
+            }
+        });
+
+        // Listen for changes in the online users counter
+        onValue(onlineRef, (snapshot) => {
+            const onlineCount = snapshot.size;
+            document.getElementById('online-counter').textContent = 'Онлайн: ' + onlineCount;
+        });
+
+        // Counter for clicks
+        let clickCount = 0;
+
+        // Function to increment click count and update the text
+        window.incrementClicks = function() {
+            clickCount++;
+            document.getElementById('click-counter').textContent = 'Кліків: ' + clickCount;
+        };
+    </script>
+</body>
+</html>
